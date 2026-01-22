@@ -1,4 +1,4 @@
-import { getTPS, TPS } from "@/data/tps";
+import type { getTPS, TPS } from "@/data/tps";
 import Tps from "./tps";
 
 export default function TpsHistory({

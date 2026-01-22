@@ -1,4 +1,4 @@
-import { TPS } from "@/data/tps";
+import type { TPS } from "@/data/tps";
 
 export default function Tps({ tps }: { tps: TPS }) {
 	return (
