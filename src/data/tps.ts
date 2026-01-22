@@ -1,16 +1,21 @@
-import { db } from '@/db'
-import { createServerFn } from '@tanstack/react-start'
-import * as schema from '@/db/schema'
-import { desc } from 'drizzle-orm'
+import { createServerFn } from "@tanstack/react-start";
+import { desc } from "drizzle-orm";
+import { db } from "@/db";
+import * as schema from "@/db/schema";
 
 export const getTPS = createServerFn({
-  method: 'GET',
+	method: "GET",
 }).handler(async () => {
-  const tps: typeof schema.tps.$inferSelect[] = await db.select().from(schema.tps).orderBy(desc(schema.tps.timestamp))
-  // with unique id
-  return tps.map((t) => ({
-    id: t.id,
-    timestamp: t.timestamp,
-    tps: t.tps,
-  }))
-})
+	const tps: (typeof schema.tps.$inferSelect)[] = await db
+		.select()
+		.from(schema.tps)
+		.orderBy(desc(schema.tps.timestamp));
+	// with unique id
+	return tps.map((t) => ({
+		id: t.id,
+		timestamp: t.timestamp,
+		tps: t.tps,
+	}));
+});
+
+export type TPS = { id: number; timestamp: Date; tps: number };

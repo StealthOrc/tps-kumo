@@ -1,38 +1,24 @@
-import { getTPS } from '@/data/tps'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import TpsHistory from "@/components/tpsHistory";
+import { getTPS } from "@/data/tps";
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute("/")({ component: App });
 
 function App() {
-  const tps = getTPS()
-  return (
-    <div className="min-h-screen bg-linear-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
-      <h1>TPS Kumo</h1>
-      <p>TPS Kumo is a tool for monitoring TPS of a Hytale Server.</p>
-      <p>10s</p>
-      <div className='flex gap-4'>
-        {tps.then((tps) => {
-          return tps.map((t: { id: number; timestamp: Date; tps: number }) => (
-            <span className={ `${t.tps > 5 ? (t.tps > 15 ? 'hover:bg-green-500 bg-green-600' : 'hover:bg-orange-500 bg-orange-600') : 'hover:bg-red-500 bg-red-600'} h-15 w-7 rounded-xl`} key={t.id}/>
-          ))
-        })}
-      </div>
-      <p>5min</p>
-      <div className='flex gap-4'>
-        {tps.then((tps) => {
-          return tps.map((t: { id: number; timestamp: Date; tps: number }) => (
-            <span className={ `${t.tps > 5 ? (t.tps > 15 ? 'hover:bg-green-500 bg-green-600' : 'hover:bg-orange-500 bg-orange-600') : 'hover:bg-red-500 bg-red-600'} h-15 w-7 rounded-xl`} key={t.id}/>
-          ))
-        })}
-      </div>
-      <p>10min</p>
-      <div className='flex gap-4'>
-        {tps.then((tps) => {
-          return tps.map((t: { id: number; timestamp: Date; tps: number }) => (
-            <span className={ `${t.tps > 5 ? (t.tps > 15 ? 'hover:bg-green-500 bg-green-600' : 'hover:bg-orange-500 bg-orange-600') : 'hover:bg-red-500 bg-red-600'} h-15 w-7 rounded-xl`} key={t.id}/>
-          ))
-        })}
-      </div>
-    </div>
-  )
+	const tps = getTPS();
+	return (
+		<div className="flex flex-col p-5 gap-4 items-center min-h-screen bg-[hsl(216,31.3%,12.5%)] text-white">
+			<div className="bg-[hsl(214,43%,21%)] border-4 border-[hsl(224,15%,20%)] rounded-sm p-2">
+				<h1 className="text-6xl text-center">TPS Kumo</h1>
+				<p className="text-xl px-2">
+					TPS Kumo is a tool for monitoring TPS of a Hytale Server.
+				</p>
+			</div>
+			<div className="flex flex-col gap-2">
+				<TpsHistory title="10s" tps={tps} />
+				<TpsHistory title="5min" tps={tps} />
+				<TpsHistory title="10min" tps={tps} />
+			</div>
+		</div>
+	);
 }
