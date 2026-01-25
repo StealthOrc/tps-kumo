@@ -1,4 +1,4 @@
-import type { TPS } from "@/data/tps";
+import type { TPS } from "@/server/ws";
 
 export default function Tps({ tps }: { tps: TPS }) {
 	return (

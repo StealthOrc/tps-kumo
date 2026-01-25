@@ -1,11 +1,12 @@
 // src/components/Chat.tsx
 import { useEffect, useRef, useState } from "react";
+import { rand_tps } from "@/lib/utils";
 import type { Message } from "@/server/ws";
 import { chatWs, type WsSub } from "../lib/api";
 
 export function Chat() {
 	const [messages, setMessages] = useState<Message[]>([]);
-	const [input, setInput] = useState("");
+	const [input, setInput] = useState(rand_tps());
 
 	const sub = useRef<WsSub | null>(null);
 
@@ -34,8 +35,12 @@ export function Chat() {
 	const send = () => {
 		if (!input) return;
 		console.log("sending input:", input);
-		sub.current?.send({ id: crypto.randomUUID(), message: input }); // typed!
-		setInput("");
+		sub.current?.send({
+			id: crypto.randomUUID(),
+			tps: input,
+			timestamp: new Date().toISOString(),
+		}); // typed!
+		setInput(rand_tps());
 	};
 
 	return (
@@ -54,7 +59,7 @@ export function Chat() {
 				{messages.map((m) => (
 					<div key={crypto.randomUUID()}>
 						<strong> {m.id} </strong>
-						<small> {m.message} </small>
+						<small> {m.tps} </small>
 					</div>
 				))}
 			</div>
@@ -62,7 +67,7 @@ export function Chat() {
 			<div className="flex flex-0">
 				<input
 					value={input}
-					onChange={(e) => setInput(e.target.value)}
+					onChange={(e) => setInput(Number(e.target.value))}
 					placeholder="type something…"
 					onKeyDown={(e) => e.key === "Enter" && send()}
 					className="flex-1 border-2 border-black"

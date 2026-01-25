@@ -1,9 +1,10 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { chatWs, type WsSub } from "@/lib/api";
-import { Message } from "@/server/ws";
+import { FormEvent, useEffect, useState } from "react";
+import { type WsSub } from "@/lib/api";
+import { rand_tps } from "@/lib/utils";
+import { type Message } from "@/server/ws";
 
 export default function TPSInserter({ ws }: { ws: WsSub | null }) {
-	const [input, setInput] = useState<string>("");
+	const [input, setInput] = useState<number>(rand_tps());
 
 	useEffect(() => {
 		ws?.on("open", () => console.log("WS opened"));
@@ -15,10 +16,14 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
-		const message: Message = { id: crypto.randomUUID(), message: input };
+		const message: Message = {
+			id: crypto.randomUUID(),
+			tps: input,
+			timestamp: new Date().toISOString(),
+		};
 		console.log("sending message:", message);
 		ws?.send(message);
-		setInput("");
+		setInput(rand_tps());
 	};
 
 	return (
@@ -28,9 +33,9 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 		>
 			<input
 				className="bg-white text-black"
-				type="text"
+				type="number"
 				value={input}
-				onChange={(event) => setInput(event.target.value)}
+				onChange={(event) => setInput(Number(event.target.value))}
 			></input>
 			<button type="submit">send</button>
 		</form>

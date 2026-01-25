@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-	const [tps, setTps] = useState<Awaited<getTPSType> | null>(null);
+	const [tps, setTps] = useState<Awaited<getTPSType>>([]);
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
 		getTPS().then((value) => setTps(value));
@@ -32,9 +32,9 @@ function App() {
 					</p>
 				</div>
 				<div className="flex flex-col gap-2">
-					<TpsHistory title="10s" tps={tps} />
-					<TpsHistory title="5min" tps={tps} />
-					<TpsHistory title="10min" tps={tps} />
+					<TpsHistory title="10s" tps={tps} setTps={setTps} ws={ws.current} />
+					<TpsHistory title="5min" tps={tps} setTps={setTps} ws={ws.current} />
+					<TpsHistory title="10min" tps={tps} setTps={setTps} ws={ws.current} />
 				</div>
 				<TPSInserter {...{ ws: ws.current }} />
 				<Link {...linkOptions({ to: "/" })}>Home</Link>

@@ -1,13 +1,26 @@
-import type { getTPSType, TPS } from "@/data/tps";
+import { useEffect } from "react";
+import type { getTPSType } from "@/data/tps";
+import type { WsSub } from "@/lib/api";
+import { TPS } from "@/server/ws";
 import Tps from "./tps";
 
 export default function TpsHistory({
 	title,
 	tps,
+	setTps,
+	ws,
 }: {
 	title: string;
-	tps: Awaited<getTPSType> | null;
+	tps: Awaited<getTPSType>;
+	setTps: any;
+	ws: WsSub | null;
 }) {
+	useEffect(() => {
+		ws?.subscribe((event) => setTps([event.data, ...tps]));
+		return () => {
+			ws?.close;
+		};
+	});
 	return (
 		<div className="border-4 border-[hsl(224,15%,20%)] bg-[hsl(212,30%,18%)] rounded-a px-4 py-2">
 			<div className="flex gap-1 items-center pb-1">
@@ -15,7 +28,7 @@ export default function TpsHistory({
 				<hr className="flex-1 border-t border-gray-300 dark:border-gray-700 rounded-2xl m-0 ml-2" />
 			</div>
 			<div className="flex gap-4">
-				{tps?.map((t: TPS) => (
+				{tps?.map((t) => (
 					<Tps key={t.id} tps={t} />
 				))}
 			</div>

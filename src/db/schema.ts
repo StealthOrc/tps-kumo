@@ -1,7 +1,14 @@
-import { doublePrecision, pgTable, serial, timestamp } from 'drizzle-orm/pg-core'
+import {
+	doublePrecision,
+	pgTable,
+	serial,
+	timestamp,
+	varchar,
+} from "drizzle-orm/pg-core";
 
-export const tps = pgTable('tps', {
-  id: serial().primaryKey().unique(),
-  timestamp: timestamp('timestamp').notNull(),
-  tps: doublePrecision('tps').notNull(),
-})
+export const tps = pgTable("tps", {
+	id: serial().primaryKey().unique(),
+	uuid: varchar().notNull(),
+	timestamp: timestamp("timestamp").notNull(),
+	tps: doublePrecision("tps").notNull(),
+});

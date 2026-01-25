@@ -14,10 +14,8 @@ export const getTPS = createServerFn({
 		.orderBy(desc(schema.tps.timestamp));
 	// with unique id
 	return tps.map((t) => ({
-		id: t.id,
-		timestamp: t.timestamp,
+		id: t.uuid,
+		timestamp: t.timestamp.toISOString(),
 		tps: t.tps,
 	}));
 });
-
-export type TPS = { id: number; timestamp: Date; tps: number };
