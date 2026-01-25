@@ -1,13 +1,13 @@
 // src/components/Chat.tsx
 import { useEffect, useRef, useState } from "react";
 import type { Message } from "@/server/ws";
-import { chatWs } from "../lib/api";
+import { chatWs, type WsSub } from "../lib/api";
 
 export function Chat() {
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState("");
 
-	const sub = useRef<ReturnType<typeof chatWs.subscribe> | null>(null);
+	const sub = useRef<WsSub | null>(null);
 
 	useEffect(() => {
 		sub.current = chatWs.subscribe();
@@ -34,7 +34,7 @@ export function Chat() {
 	const send = () => {
 		if (!input) return;
 		console.log("sending input:", input);
-		sub.current?.send({ id: Math.random() * 10000, message: input }); // typed!
+		sub.current?.send({ id: crypto.randomUUID(), message: input }); // typed!
 		setInput("");
 	};
 
