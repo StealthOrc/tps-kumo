@@ -1,7 +1,9 @@
 import { createFileRoute, Link, linkOptions } from "@tanstack/react-router";
-import { StrictMode, useEffect, useState } from "react";
+import { StrictMode, useEffect, useRef, useState } from "react";
+import TPSInserter from "@/components/tps/TpsInserter";
 import TpsHistory from "@/components/tpsHistory";
 import { getTPS, type getTPSType } from "@/data/tps";
+import { chatWs, type WsSub } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
 	errorComponent: ({ error }) => <pre>{JSON.stringify(error, null, 2)}</pre>,
@@ -10,10 +12,15 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-	const [tps, setTps] = useState<getTPSType | null>(null);
+	const [tps, setTps] = useState<Awaited<getTPSType> | null>(null);
+	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
+		getTPS().then((value) => setTps(value));
+		ws.current = chatWs.subscribe();
 		//TODO: When coming from another page back to home, we seem to do this request 3x!?
-		setTps(getTPS());
+		return () => {
+			ws.current?.close();
+		};
 	}, []);
 	return (
 		<StrictMode>
@@ -29,6 +36,7 @@ function App() {
 					<TpsHistory title="5min" tps={tps} />
 					<TpsHistory title="10min" tps={tps} />
 				</div>
+				<TPSInserter {...{ ws: ws.current }} />
 				<Link {...linkOptions({ to: "/" })}>Home</Link>
 				<Link to="/testws">Testws</Link>
 			</div>
