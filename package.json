@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:api": "bun src/server/elysia.ts",
+    "dev:api": "bun run --hot src/server/elysia.ts",
     "dev:app": "vite dev --port 3000",
     "dev": "concurrently \"bun run dev:api\" \"bun run dev:app\"",
     "build": "vite build",
