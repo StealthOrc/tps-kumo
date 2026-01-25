@@ -1,12 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { StrictMode } from "react";
+import { createFileRoute, Link, linkOptions } from "@tanstack/react-router";
+import { StrictMode, useEffect, useState } from "react";
 import TpsHistory from "@/components/tpsHistory";
-import { getTPS } from "@/data/tps";
+import { getTPS, type getTPSType } from "@/data/tps";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({
+	errorComponent: ({ error }) => <pre>{JSON.stringify(error, null, 2)}</pre>,
+	pendingComponent: () => <div>Loading home…</div>,
+	component: App,
+});
 
 function App() {
-	const tps = getTPS();
+	const [tps, setTps] = useState<getTPSType | null>(null);
+	useEffect(() => {
+		//TODO: When coming from another page back to home, we seem to do this request 3x!?
+		setTps(getTPS());
+	}, []);
 	return (
 		<StrictMode>
 			<div className="flex flex-col p-5 gap-4 items-center min-h-screen bg-[hsl(216,31.3%,12.5%)] text-white">
@@ -21,6 +29,8 @@ function App() {
 					<TpsHistory title="5min" tps={tps} />
 					<TpsHistory title="10min" tps={tps} />
 				</div>
+				<Link {...linkOptions({ to: "/" })}>Home</Link>
+				<Link to="/testws">Testws</Link>
 			</div>
 		</StrictMode>
 	);

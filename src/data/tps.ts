@@ -3,6 +3,8 @@ import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 
+export type getTPSType = ReturnType<typeof getTPS>;
+
 export const getTPS = createServerFn({
 	method: "GET",
 }).handler(async () => {
