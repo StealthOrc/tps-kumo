@@ -30,10 +30,10 @@ export const ws = new Elysia().ws("/ws", {
 		console.log("message received, now sending:", message);
 		db.insert(tps)
 			.values({
-				id: undefined,
 				uuid: message.id,
 				timestamp: new Date(message.timestamp),
 				tps: message.tps,
+				world: "696cb4f1-a06a-451d-ad04-fc6f70e3a99b",
 			})
 			.then((value) => {
 				ws.send(message);
