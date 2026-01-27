@@ -18,7 +18,9 @@ const app = new Elysia()
 	// mount routes
 	.use(ws)
 	.listen(3001, () => {
-		console.log("🦊 Elysia server listening on http://localhost:3001");
+		console.log(
+			`🦊 Elysia server listening on http://${env.PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL}`,
+		);
 	});
 
 export type App = typeof app;
