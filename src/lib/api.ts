@@ -5,6 +5,6 @@ import type { App } from "../server/elysia"; // the exported treaty client
 import { DEFAULT_BACKEND_URL } from "./const";
 
 export const chatWs = treaty<App>(
-	env.PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL,
+	env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL,
 ).ws; // <-- Eden‑Treaty WebSocket helper
 export type WsSub = ReturnType<typeof chatWs.subscribe>;
