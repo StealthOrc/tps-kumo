@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/libsql";
 
-import * as schema from "./schema.ts";
-
 let url = process.env.DATABASE_URL;
 if (!url) url = "";
-export const db = drizzle(url, { schema });
+let authToken = process.env.AUTH_TOKEN;
+if (!authToken) authToken = "";
+export const db = drizzle({ connection: { url, authToken } });
