@@ -8,6 +8,7 @@
     "dev": "concurrently \"bun run dev:api\" \"bun run dev:app\"",
     "build": "vite build",
     "build:api": "bun build --compile --target bun --outfile ./out/server src/server/elysia.ts",
+    "start:api": "./out/server",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",
