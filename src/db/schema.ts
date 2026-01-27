@@ -1,4 +1,10 @@
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+	doublePrecision,
+	pgTable,
+	timestamp,
+	uuid,
+	varchar,
+} from "drizzle-orm/pg-core";
 import z from "zod";
 
 const uuidSchema = z.uuid();
@@ -6,17 +12,17 @@ type UUID = z.infer<typeof uuidSchema>;
 
 const UUID_ZERO: UUID = "00000000-0000-0000-0000-000000000000";
 
-export const tps = sqliteTable("tps", {
-	uuid: text().primaryKey().notNull().unique(),
-	timestamp: integer({ mode: "timestamp" }).notNull(),
-	tps: real("tps").notNull(),
-	world: text()
+export const tps = pgTable("tps", {
+	uuid: uuid().primaryKey().notNull().unique(),
+	timestamp: timestamp().notNull(),
+	tps: doublePrecision("tps").notNull(),
+	world: uuid()
 		.references(() => worlds.uuid)
 		.notNull()
 		.default(UUID_ZERO),
 });
 
-export const worlds = sqliteTable("worlds", {
-	uuid: text().primaryKey().unique(),
-	name: text().notNull(),
+export const worlds = pgTable("worlds", {
+	uuid: uuid().primaryKey().unique(),
+	name: varchar().notNull(),
 });

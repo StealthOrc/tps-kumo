@@ -4,16 +4,9 @@
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1769457580661,
-      "tag": "0000_lowly_masque",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1769458312654,
-      "tag": "0001_curved_rage",
+      "version": "7",
+      "when": 1769546671354,
+      "tag": "0000_sloppy_calypso",
       "breakpoints": true
     }
   ]

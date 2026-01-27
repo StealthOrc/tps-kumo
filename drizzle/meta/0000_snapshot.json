@@ -1,51 +1,40 @@
 {
-  "version": "6",
-  "dialect": "sqlite",
-  "id": "fd46d713-33e0-40b5-bc18-c181f9db3819",
+  "id": "5bb64b0c-01d3-4dc0-a667-af4bb31634e1",
   "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "tps": {
+    "public.tps": {
       "name": "tps",
+      "schema": "",
       "columns": {
         "uuid": {
           "name": "uuid",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "integer",
+          "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "tps": {
           "name": "tps",
-          "type": "real",
+          "type": "double precision",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "world": {
           "name": "world",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
           "default": "'00000000-0000-0000-0000-000000000000'"
         }
       },
-      "indexes": {
-        "tps_uuid_unique": {
-          "name": "tps_uuid_unique",
-          "columns": [
-            "uuid"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "tps_world_worlds_uuid_fk": {
           "name": "tps_world_worlds_uuid_fk",
@@ -62,50 +51,62 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
+      "uniqueConstraints": {
+        "tps_uuid_unique": {
+          "name": "tps_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "worlds": {
+    "public.worlds": {
       "name": "worlds",
+      "schema": "",
       "columns": {
         "uuid": {
           "name": "uuid",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "varchar",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": true
         }
       },
-      "indexes": {
-        "worlds_uuid_unique": {
-          "name": "worlds_uuid_unique",
-          "columns": [
-            "uuid"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
+      "uniqueConstraints": {
+        "worlds_uuid_unique": {
+          "name": "worlds_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
-  "views": {},
   "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
-    "indexes": {}
+    "tables": {}
   }
 }
