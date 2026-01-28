@@ -33,6 +33,7 @@
     "@tanstack/react-router-ssr-query": "^1.131.7",
     "@tanstack/react-start": "^1.132.0",
     "@tanstack/router-plugin": "^1.132.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.4",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.22",

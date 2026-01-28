@@ -10,8 +10,8 @@ const app = new Elysia()
 	.use(
 		cors({
 			origin: [
-				`http://${env.VITE_FRONTEND_URL || DEFAULT_FRONTEND_URL}`,
-				`https://${env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL}`,
+				`${env.VITE_FRONTEND_URL || `https://${DEFAULT_FRONTEND_URL}`}`,
+				`${env.VITE_BACKEND_URL || `https://${DEFAULT_BACKEND_URL}`}`,
 			],
 		}),
 	)
@@ -19,7 +19,7 @@ const app = new Elysia()
 	.use(ws)
 	.listen(3001, () => {
 		console.log(
-			`🦊 Elysia server listening on http://${env.VITE_BACKEND_URL || DEFAULT_BACKEND_URL}`,
+			`🦊 Elysia server listening on ${env.VITE_BACKEND_URL || `https://${DEFAULT_BACKEND_URL}`}`,
 		);
 	});
 
