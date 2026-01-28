@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { rand_tps } from "@/lib/utils";
 import type { Message } from "@/server/ws";
-import { chatWs, type WsSub } from "../lib/api";
+import { createWebSocket, type WsSub } from "../lib/api";
 
 export function Chat() {
 	const [messages, setMessages] = useState<Message[]>([]);
@@ -11,7 +11,7 @@ export function Chat() {
 	const sub = useRef<WsSub | null>(null);
 
 	useEffect(() => {
-		sub.current = chatWs.subscribe();
+		sub.current = createWebSocket().subscribe();
 		console.log(new Date().toISOString(), " current sub:", sub?.current);
 		sub.current.subscribe((event) => {
 			console.log("received message:", event.data);
