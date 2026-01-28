@@ -15,6 +15,7 @@ const app = new Elysia()
 			],
 		}),
 	)
+	.get("/", "YOU SHOULD NOT BE PEEKING AROUND HERE! grr òwó")
 	// mount routes
 	.use(ws)
 	.listen(3001, () => {
