@@ -3,6 +3,7 @@ import { StrictMode, useEffect, useRef, useState } from "react";
 import TPSInserter from "@/components/tps/TpsInserter";
 import TpsHistory from "@/components/tpsHistory";
 import { getTPS, type getTPSType } from "@/data/tps";
+import { env } from "@/env";
 import { createWebSocket, type WsSub } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
@@ -16,7 +17,7 @@ function App() {
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
 		getTPS().then((value) => setTps(value));
-		ws.current = createWebSocket().subscribe();
+		ws.current = createWebSocket(env.VITE_BACKEND_URL).subscribe();
 		//TODO: When coming from another page back to home, we seem to do this request 3x!?
 		return () => {
 			ws.current?.close();

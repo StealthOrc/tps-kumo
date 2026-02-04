@@ -13,15 +13,16 @@ export const env = createEnv({
 	clientPrefix: "VITE_",
 
 	client: {
-		VITE_FRONTEND_URL: z.url().optional(),
-		VITE_BACKEND_URL: z.url().optional(),
+		VITE_FRONTEND_URL: z.url(),
+		VITE_BACKEND_URL: z.url(),
 	},
 
 	/**
 	 * What object holds the environment variables at runtime. This is usually
 	 * `process.env` or `import.meta.env`.
+	 * we use import.meta.env for the client and process.env for the server
 	 */
-	runtimeEnv: process.env,
+	runtimeEnv: typeof window === "undefined" ? process.env : import.meta.env,
 
 	/**
 	 * By default, this library will feed the environment variables directly to
