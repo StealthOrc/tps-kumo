@@ -1,45 +1,87 @@
 import { Elysia } from "elysia";
-import { z } from "zod";
 import { db } from "@/db";
-import { tps } from "@/db/schema";
-import { rand_tps } from "@/lib/utils";
-
-export const tpsSchema = z.object({
-	id: z.uuid(),
-	tps: z.int(),
-	timestamp: z.iso.datetime(),
-});
-export type TPS = z.infer<typeof tpsSchema>;
-
-export const messageSchema = tpsSchema;
-export type Message = z.infer<typeof messageSchema>;
+import { tps as tpsTable } from "@/db/schema";
+import { addTpsSchema, messageSchema, tpsSchema } from "@/lib/types";
 
 export const ws = new Elysia().ws("/ws", {
 	// these are the definitions of our websocket message type
 	body: messageSchema,
 	response: messageSchema,
-	open(ws) {
-		console.log(new Date().toISOString(), " sending welcome message...");
-		ws.send({
-			id: crypto.randomUUID(),
-			tps: rand_tps(),
-			timestamp: new Date().toISOString(),
-		});
+	open(_ws) {
+		console.log(new Date().toISOString(), "A client connected.");
 	},
 	message(ws, message) {
-		console.log("message received, now sending:", message);
-		db.insert(tps)
-			.values({
-				uuid: message.id,
-				timestamp: new Date(message.timestamp),
-				tps: message.tps,
-				world: "696cb4f1-a06a-451d-ad04-fc6f70e3a99b",
+		console.log(
+			new Date().toISOString(),
+			"message received:",
+			message,
+			" now stringified: ",
+			JSON.stringify(message),
+		);
+		const tpsProbe = tpsSchema.safeParse(message);
+		if (tpsProbe.success) {
+			console.log("test");
+			const tps = tpsProbe.data;
+			db.insert(tpsTable)
+				.values({
+					uuid: tps.id,
+					timestamp: new Date(tps.timestamp),
+					tps: tps.tps,
+					world: "696cb4f1-a06a-451d-ad04-fc6f70e3a99b",
+				})
+				.then(() => {
+					console.log(new Date().toISOString(), "got tpsProbe, sending:", tps);
+					ws.send(tps);
+				});
+			return;
+		}
+		const addTpsProbe = addTpsSchema.safeParse(message);
+		if (!addTpsProbe.success) return;
+		const addTps = addTpsProbe.data;
+
+		// Iterate over all intervals in tpsMstpMap
+		const insertPromises = Object.entries(addTps.tpsMstpMap).map(
+			([intervalKey, tpsMsptArray]) => {
+				const interval = parseInt(intervalKey, 10); // Convert string key to number
+				const tpsValue = tpsMsptArray[0] ?? 0; // Get TPS (first element of array)
+				const msptValue = tpsMsptArray[1] ?? 0;
+
+				console.log(
+					new Date(),
+					`interval, msptArray, tps, mspt:`,
+					interval,
+					tpsMsptArray,
+					tpsValue,
+					msptValue,
+				);
+				const dbTps = {
+					uuid: crypto.randomUUID(),
+					timestamp: new Date(addTps.time),
+					tps: tpsValue,
+					world: addTps.worldUUID,
+					interval, // Store the interval as integer
+				};
+
+				console.log(`Inserting TPS for interval ${interval}:`, dbTps);
+
+				return db.insert(tpsTable).values(dbTps);
+			},
+		);
+
+		Promise.all(insertPromises)
+			.then(() => {
+				console.log(
+					new Date().toISOString(),
+					"got addTpsProbe, inserted all intervals, sending:",
+					addTps,
+				);
+				ws.send(addTps);
 			})
-			.then((value) => {
-				ws.send(message);
+			.catch((error) => {
+				console.error("Error inserting TPS records:", error);
 			});
 	},
 	close() {
-		console.log("client left");
+		console.log(new Date().toISOString(), "client left");
 	},
 });

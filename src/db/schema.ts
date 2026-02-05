@@ -1,5 +1,6 @@
 import {
 	doublePrecision,
+	integer,
 	pgTable,
 	timestamp,
 	uuid,
@@ -20,6 +21,7 @@ export const tps = pgTable("tps", {
 		.references(() => worlds.uuid)
 		.notNull()
 		.default(UUID_ZERO),
+	interval: integer(),
 });
 
 export const worlds = pgTable("worlds", {

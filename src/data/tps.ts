@@ -15,7 +15,8 @@ export const getTPS = createServerFn({
 	// with unique id
 	return tps.map((t) => ({
 		id: t.uuid,
-		timestamp: t.timestamp.toISOString(),
 		tps: t.tps,
+		timestamp: t.timestamp.toISOString(),
+		interval: t.interval,
 	}));
 });

@@ -17,6 +17,11 @@ function App() {
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
 		getTPS().then((value) => setTps(value));
+		console.log(
+			new Date().toISOString(),
+			"creating websocket: ",
+			env.VITE_BACKEND_URL,
+		);
 		ws.current = createWebSocket(env.VITE_BACKEND_URL).subscribe();
 		//TODO: When coming from another page back to home, we seem to do this request 3x!?
 		return () => {
@@ -33,11 +38,11 @@ function App() {
 					</p>
 				</div>
 				<div className="flex flex-col gap-2">
-					<TpsHistory title="10s" tps={tps} setTps={setTps} ws={ws.current} />
-					<TpsHistory title="5min" tps={tps} setTps={setTps} ws={ws.current} />
-					<TpsHistory title="10min" tps={tps} setTps={setTps} ws={ws.current} />
+					<TpsHistory interval={10} tps={tps} setTps={setTps} ws={ws.current} />
+					<TpsHistory interval={11} tps={tps} setTps={setTps} ws={ws.current} />
+					{/*<TpsHistory title="10min" tps={tps} setTps={setTps} ws={ws.current} /> */}
 				</div>
-				<TPSInserter {...{ ws: ws.current }} />
+				<TPSInserter {...{ ws: ws.current, useTPSType: false }} />
 				<Link {...linkOptions({ to: "/" })}>Home</Link>
 				<Link to="/testws">Testws</Link>
 			</div>
