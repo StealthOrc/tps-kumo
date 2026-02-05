@@ -37,6 +37,13 @@ function App() {
 						TPS Kumo is a tool for monitoring TPS of a Hytale Server.
 					</p>
 				</div>
+				<nav className="border-1 border-[hsl(224,15%,20%)] p-2">
+					<ol>
+						<Link className="hover:underline" {...linkOptions({ to: "/" })}>
+							Home
+						</Link>
+					</ol>
+				</nav>
 				<div className="flex flex-col gap-2">
 					<TpsHistory interval={10} tps={tps} setTps={setTps} ws={ws.current} />
 					<TpsHistory interval={11} tps={tps} setTps={setTps} ws={ws.current} />

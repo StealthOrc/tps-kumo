@@ -64,9 +64,12 @@ export default function TPSInserter({
 
 	return (
 		<form
-			className="flex flex-col border-2 border-white text-white"
+			className="flex flex-col border-2 border-white text-white p-2 gap-2"
 			onSubmit={handleSubmit}
 		>
+			<span className="text-center font-bold border-b border-b-white pb-0.5">
+				Test AddTps Tool
+			</span>
 			<div id={`formContent-${useId()}`} className="flex gap-2 items-center">
 				<div className="flex flex-col">
 					<div className="flex flex-col">
