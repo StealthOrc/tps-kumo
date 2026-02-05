@@ -59,7 +59,7 @@ export default function TpsHistory({
 				<p>{interval}s</p>
 				<hr className="flex-1 border-t border-gray-300 dark:border-gray-700 rounded-2xl m-0 ml-2" />
 			</div>
-			<div className="flex gap-4">
+			<div className="flex gap-0.5">
 				{tps?.map((t) => (
 					<Tps key={t.id} tps={t} />
 				))}

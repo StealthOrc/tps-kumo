@@ -1,4 +1,4 @@
-import type { TPS } from "@/server/ws";
+import type { TPS } from "@/lib/types";
 
 export default function Tps({ tps }: { tps: TPS }) {
 	return (
@@ -10,7 +10,7 @@ export default function Tps({ tps }: { tps: TPS }) {
 						: "hover:bg-orange-500 bg-orange-600"
 					: "hover:bg-red-500 bg-red-600"
 			} 
-            h-15 w-7 rounded-xl`}
+            h-15 w-2 rounded-xs`}
 			key={tps.id}
 			data-tps={tps.tps}
 		/>
