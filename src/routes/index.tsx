@@ -30,7 +30,7 @@ function App() {
 	}, []);
 	return (
 		<StrictMode>
-			<div className="flex flex-col p-5 gap-4 items-center min-h-screen bg-[hsl(216,31.3%,12.5%)] text-white">
+			<div className="flex flex-col p-5 gap-4 items-center min-h-screen bg-[hsl(216,31.3%,12.5%)] text-white overflow-auto">
 				<div className="bg-[hsl(214,43%,21%)] border-4 border-[hsl(224,15%,20%)] rounded-sm p-2">
 					<h1 className="text-6xl text-center">TPS Kumo</h1>
 					<p className="text-xl px-2">
