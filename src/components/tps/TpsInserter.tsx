@@ -32,7 +32,7 @@ export default function TPSInserter({
 				} as TPS)
 			: ({
 					worldName: "default",
-					worldUUID: "696cb4f1-a06a-451d-ad04-fc6f70e3a99b",
+					worldUUID: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
 					time: new Date().toISOString(),
 					tpsMstpMap: { [interval]: [tps, 0], [interval + 1]: [tps + 1, 1] },
 				} as AddTps);
@@ -43,7 +43,7 @@ export default function TPSInserter({
 		);
 		ws?.send(message);
 		setTps(rand_tps());
-		setInterval(10);
+		setInterval(interval + 2);
 	};
 
 	return (
