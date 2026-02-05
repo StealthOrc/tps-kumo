@@ -43,8 +43,6 @@ function App() {
 					{/*<TpsHistory title="10min" tps={tps} setTps={setTps} ws={ws.current} /> */}
 				</div>
 				<TPSInserter {...{ ws: ws.current, useTPSType: false }} />
-				<Link {...linkOptions({ to: "/" })}>Home</Link>
-				<Link to="/testws">Testws</Link>
 			</div>
 		</StrictMode>
 	);
