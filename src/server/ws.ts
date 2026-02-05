@@ -3,7 +3,7 @@ import type { ElysiaWS } from "elysia/ws";
 import { db } from "@/db";
 import { tps as tpsTable, worlds } from "@/db/schema";
 import {
-	type AddTps,
+	type AddTpsTps,
 	addTpsSchema,
 	messageSchema,
 	tpsSchema,
@@ -45,24 +45,27 @@ export const ws = new Elysia().ws("/ws", {
 		if (!addTpsProbe.success) return;
 
 		const addTps = addTpsProbe.data;
-		// insert world if we dont have it yet
-		db.insert(worlds)
-			.values({
-				uuid: addTps.worldUUID,
-				name: addTps.worldName,
-			})
-			.onConflictDoUpdate({
-				target: worlds.uuid,
-				set: { name: addTps.worldName },
-			})
-			.then(() => insertTps(ws, addTps));
+
+		addTps.tpsData.forEach((val) => {
+			// insert world if we dont have it yet
+			db.insert(worlds)
+				.values({
+					uuid: val.worldUUID,
+					name: val.worldName,
+				})
+				.onConflictDoUpdate({
+					target: worlds.uuid,
+					set: { name: val.worldName },
+				})
+				.then(() => insertTps(ws, val));
+		});
 	},
 	close() {
 		console.log(new Date().toISOString(), "client left");
 	},
 });
 
-function insertTps(ws: ElysiaWS, addTps: AddTps) {
+function insertTps(ws: ElysiaWS, addTps: AddTpsTps) {
 	// Iterate over all intervals in tpsMstpMap
 	const insertPromises = Object.entries(addTps.tpsMstpMap).map(
 		([intervalKey, tpsMsptArray]) => {

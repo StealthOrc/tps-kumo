@@ -29,7 +29,8 @@ reference:
   }
 }
 */
-export const addTpsSchema = z.object({
+
+export const addTpsTpsSchema = z.object({
 	worldName: z.string(),
 	worldUUID: z.string(),
 	time: z
@@ -37,9 +38,11 @@ export const addTpsSchema = z.object({
 		.transform((val) => (typeof val === "string" ? val : val.toISOString())),
 	tpsMstpMap: z.record(z.string(), z.array(z.number())),
 });
+export const addTpsSchema = z.object({ tpsData: z.array(addTpsTpsSchema) });
 
 export type TPS = z.infer<typeof tpsSchema>;
 export type AddTps = z.infer<typeof addTpsSchema>;
+export type AddTpsTps = z.infer<typeof addTpsTpsSchema>;
 
 export const messageSchema = z.union([tpsSchema, addTpsSchema]);
 export type Message = z.infer<typeof messageSchema>;

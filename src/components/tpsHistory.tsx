@@ -35,16 +35,16 @@ export default function TpsHistory({
 			}
 			console.log(
 				"tpsparsedata msptmap:",
-				tpsParse.data.tpsMstpMap,
+				tpsParse.data.tpsData[0].tpsMstpMap,
 				interval.toString(),
-				tpsParse.data.tpsMstpMap[interval],
+				tpsParse.data.tpsData[0].tpsMstpMap[interval],
 			);
-			if (!tpsParse.data.tpsMstpMap[interval]) return;
+			if (!tpsParse.data.tpsData[0].tpsMstpMap[interval]) return;
 			setTps([
 				{
 					id: crypto.randomUUID(),
-					tps: tpsParse.data.tpsMstpMap[interval][0],
-					timestamp: tpsParse.data.time,
+					tps: tpsParse.data.tpsData[0].tpsMstpMap[interval][0],
+					timestamp: tpsParse.data.tpsData[0].time,
 				} as TPS,
 				...tps,
 			]);

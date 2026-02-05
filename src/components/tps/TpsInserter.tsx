@@ -31,10 +31,26 @@ export default function TPSInserter({
 					timestamp: new Date().toISOString(),
 				} as TPS)
 			: ({
-					worldName: "default",
-					worldUUID: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
-					time: new Date().toISOString(),
-					tpsMstpMap: { [interval]: [tps, 0], [interval + 1]: [tps + 1, 1] },
+					tpsData: [
+						{
+							worldName: "default",
+							worldUUID: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
+							time: new Date().toISOString(),
+							tpsMstpMap: {
+								[interval]: [tps, 0],
+								[interval + 1]: [tps + 1, 1],
+							},
+						},
+						{
+							worldName: "another",
+							worldUUID: "509027b4-eb88-4c6a-a910-6a512ec801ba",
+							time: new Date().toISOString(),
+							tpsMstpMap: {
+								[interval]: [tps, 0],
+								[interval + 1]: [tps + 1, 1],
+							},
+						},
+					],
 				} as AddTps);
 		console.log(
 			new Date().toISOString(),
