@@ -1,7 +1,13 @@
 import { Elysia } from "elysia";
+import type { ElysiaWS } from "elysia/ws";
 import { db } from "@/db";
-import { tps as tpsTable } from "@/db/schema";
-import { addTpsSchema, messageSchema, tpsSchema } from "@/lib/types";
+import { tps as tpsTable, worlds } from "@/db/schema";
+import {
+	type AddTps,
+	addTpsSchema,
+	messageSchema,
+	tpsSchema,
+} from "@/lib/types";
 
 export const ws = new Elysia().ws("/ws", {
 	// these are the definitions of our websocket message type
@@ -27,7 +33,7 @@ export const ws = new Elysia().ws("/ws", {
 					uuid: tps.id,
 					timestamp: new Date(tps.timestamp),
 					tps: tps.tps,
-					world: "696cb4f1-a06a-451d-ad04-fc6f70e3a99b",
+					world: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
 				})
 				.then(() => {
 					console.log(new Date().toISOString(), "got tpsProbe, sending:", tps);
@@ -37,51 +43,65 @@ export const ws = new Elysia().ws("/ws", {
 		}
 		const addTpsProbe = addTpsSchema.safeParse(message);
 		if (!addTpsProbe.success) return;
+
 		const addTps = addTpsProbe.data;
-
-		// Iterate over all intervals in tpsMstpMap
-		const insertPromises = Object.entries(addTps.tpsMstpMap).map(
-			([intervalKey, tpsMsptArray]) => {
-				const interval = parseInt(intervalKey, 10); // Convert string key to number
-				const tpsValue = tpsMsptArray[0] ?? 0; // Get TPS (first element of array)
-				const msptValue = tpsMsptArray[1] ?? 0;
-
-				console.log(
-					new Date(),
-					`interval, msptArray, tps, mspt:`,
-					interval,
-					tpsMsptArray,
-					tpsValue,
-					msptValue,
-				);
-				const dbTps = {
-					uuid: crypto.randomUUID(),
-					timestamp: new Date(addTps.time),
-					tps: tpsValue,
-					world: addTps.worldUUID,
-					interval, // Store the interval as integer
-				};
-
-				console.log(`Inserting TPS for interval ${interval}:`, dbTps);
-
-				return db.insert(tpsTable).values(dbTps);
-			},
-		);
-
-		Promise.all(insertPromises)
-			.then(() => {
-				console.log(
-					new Date().toISOString(),
-					"got addTpsProbe, inserted all intervals, sending:",
-					addTps,
-				);
-				ws.send(addTps);
+		// insert world if we dont have it yet
+		db.insert(worlds)
+			.values({
+				uuid: addTps.worldUUID,
+				name: addTps.worldName,
 			})
-			.catch((error) => {
-				console.error("Error inserting TPS records:", error);
-			});
+			.onConflictDoUpdate({
+				target: worlds.uuid,
+				set: { name: addTps.worldName },
+			})
+			.then(() => insertTps(ws, addTps));
 	},
 	close() {
 		console.log(new Date().toISOString(), "client left");
 	},
 });
+
+function insertTps(ws: ElysiaWS, addTps: AddTps) {
+	// Iterate over all intervals in tpsMstpMap
+	const insertPromises = Object.entries(addTps.tpsMstpMap).map(
+		([intervalKey, tpsMsptArray]) => {
+			const interval = parseInt(intervalKey, 10); // Convert string key to number
+			const tpsValue = tpsMsptArray[0] ?? 0; // Get TPS (first element of array)
+			const msptValue = tpsMsptArray[1] ?? 0;
+
+			console.log(
+				new Date(),
+				`interval, msptArray, tps, mspt:`,
+				interval,
+				tpsMsptArray,
+				tpsValue,
+				msptValue,
+			);
+			const dbTps = {
+				uuid: crypto.randomUUID(),
+				timestamp: new Date(addTps.time),
+				tps: tpsValue,
+				world: addTps.worldUUID,
+				interval, // Store the interval as integer
+			};
+
+			console.log(`Inserting TPS for interval ${interval}:`, dbTps);
+
+			return db.insert(tpsTable).values(dbTps);
+		},
+	);
+
+	Promise.all(insertPromises)
+		.then(() => {
+			console.log(
+				new Date().toISOString(),
+				"got addTpsProbe, inserted all intervals, sending:",
+				addTps,
+			);
+			ws.send(addTps);
+		})
+		.catch((error) => {
+			console.error("Error inserting TPS records:", error);
+		});
+}
