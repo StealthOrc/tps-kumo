@@ -1,13 +1,47 @@
 import z from "zod";
 
-export const tpsSchema = z.object({
-	id: z.uuid(),
-	tps: z.int(),
-	timestamp: z
+namespace ZodUtils {
+	export const zodSafeDateString = z
 		.union([z.string(), z.date()])
-		.transform((val) => (typeof val === "string" ? val : val.toISOString())),
-});
-/*
+		.transform((val) => (typeof val === "string" ? val : val.toISOString()));
+}
+
+export namespace Internal {
+	export const tpsSchema = z.object({
+		worldName: z.string(),
+		worldUUID: z.string(),
+		time: ZodUtils.zodSafeDateString,
+		interval: z.number(),
+		tps: z.number(),
+		mspt: z.number(),
+	});
+	export const tpsArrSchema = z.array(tpsSchema);
+	export const tpsPointSchema = z.object({
+		time: ZodUtils.zodSafeDateString,
+		tps: z.number(),
+		mspt: z.number(),
+	});
+	// tpsMap of worldUUID: (interval : TPSPoint Array)
+	export const tpsMapSchema = z.record(
+		z.uuid(),
+		z.object({
+			worldName: z.string(),
+			intervalData: z.record(z.string(), z.array(tpsPointSchema)),
+		}),
+	);
+
+	//verbose TPS Info with interval and world info
+	export type TPS = z.infer<typeof tpsSchema>;
+	export type TPSArr = TPS[];
+
+	//stripped TPS point info
+	export type TPSPoint = z.infer<typeof tpsPointSchema>;
+	export type TPSPointArr = TPSPoint[];
+	export type TPSPointMap = z.infer<typeof tpsMapSchema>;
+}
+
+export namespace External {
+	/*
 reference: 
 {
   "worldName": "default",
@@ -29,20 +63,25 @@ reference:
   }
 }
 */
+	export const tpsSchema = z.object({
+		worldName: z.string(),
+		worldUUID: z.string(),
+		time: ZodUtils.zodSafeDateString,
+		tpsMstpMap: z.record(z.string(), z.array(z.number())),
+	});
+	export const addTpsSchema = z.object({
+		tpsData: z.array(tpsSchema),
+	});
 
-export const addTpsTpsSchema = z.object({
-	worldName: z.string(),
-	worldUUID: z.string(),
-	time: z
-		.union([z.string(), z.date()])
-		.transform((val) => (typeof val === "string" ? val : val.toISOString())),
-	tpsMstpMap: z.record(z.string(), z.array(z.number())),
-});
-export const addTpsSchema = z.object({ tpsData: z.array(addTpsTpsSchema) });
+	export type AddHytaleTps = z.infer<typeof addTpsSchema>;
+	export type TPS = z.infer<typeof tpsSchema>;
+}
 
-export type TPS = z.infer<typeof tpsSchema>;
-export type AddTps = z.infer<typeof addTpsSchema>;
-export type AddTpsTps = z.infer<typeof addTpsTpsSchema>;
-
-export const messageSchema = z.union([tpsSchema, addTpsSchema]);
+export const messageSchema = z.union([
+	External.addTpsSchema,
+	Internal.tpsArrSchema,
+]);
 export type Message = z.infer<typeof messageSchema>;
+
+export type WorldUUID = string;
+export type Interval = number;

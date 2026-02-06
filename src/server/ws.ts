@@ -2,12 +2,7 @@ import { Elysia } from "elysia";
 import type { ElysiaWS } from "elysia/ws";
 import { db } from "@/db";
 import { tps as tpsTable, worlds } from "@/db/schema";
-import {
-	type AddTpsTps,
-	addTpsSchema,
-	messageSchema,
-	tpsSchema,
-} from "@/lib/types";
+import { External, messageSchema } from "@/lib/types";
 
 export const ws = new Elysia().ws("/ws", {
 	// these are the definitions of our websocket message type
@@ -24,24 +19,7 @@ export const ws = new Elysia().ws("/ws", {
 			" now stringified: ",
 			JSON.stringify(message),
 		);
-		const tpsProbe = tpsSchema.safeParse(message);
-		if (tpsProbe.success) {
-			console.log("test");
-			const tps = tpsProbe.data;
-			db.insert(tpsTable)
-				.values({
-					uuid: tps.id,
-					timestamp: new Date(tps.timestamp),
-					tps: tps.tps,
-					world: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
-				})
-				.then(() => {
-					console.log(new Date().toISOString(), "got tpsProbe, sending:", tps);
-					ws.send(tps);
-				});
-			return;
-		}
-		const addTpsProbe = addTpsSchema.safeParse(message);
+		const addTpsProbe = External.addTpsSchema.safeParse(message);
 		if (!addTpsProbe.success) return;
 
 		const addTps = addTpsProbe.data;
@@ -65,7 +43,7 @@ export const ws = new Elysia().ws("/ws", {
 	},
 });
 
-function insertTps(ws: ElysiaWS, addTps: AddTpsTps) {
+function insertTps(ws: ElysiaWS, addTps: External.TPS) {
 	// Iterate over all intervals in tpsMstpMap
 	const insertPromises = Object.entries(addTps.tpsMstpMap).map(
 		([intervalKey, tpsMsptArray]) => {

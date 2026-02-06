@@ -1,6 +1,8 @@
 import { createFileRoute, Link, linkOptions } from "@tanstack/react-router";
-import { StrictMode, useEffect, useRef, useState } from "react";
+import { StrictMode, useEffect, useId, useRef, useState } from "react";
+import Tps from "@/components/tps";
 import TPSInserter from "@/components/tps/TpsInserter";
+import WorldSection from "@/components/tps/WorldSection";
 import TpsHistory from "@/components/tpsHistory";
 import { getTPS, type getTPSType } from "@/data/tps";
 import { env } from "@/env";
@@ -13,10 +15,11 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-	const [tps, setTps] = useState<Awaited<getTPSType>>([]);
+	const [tpsArr, setTpsArr] = useState<Awaited<getTPSType>>({});
+	const [worlds, setWorlds] = useState<string[]>([]);
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
-		getTPS().then((value) => setTps(value));
+		getTPS().then((value) => setTpsArr(value));
 		console.log(
 			new Date().toISOString(),
 			"creating websocket: ",
@@ -44,10 +47,33 @@ function App() {
 						</Link>
 					</ol>
 				</nav>
-				<div className="flex flex-col gap-2">
-					<TpsHistory interval={10} tps={tps} setTps={setTps} ws={ws.current} />
-					<TpsHistory interval={11} tps={tps} setTps={setTps} ws={ws.current} />
-					{/*<TpsHistory title="10min" tps={tps} setTps={setTps} ws={ws.current} /> */}
+				<div className="flex flex-1 flex-col gap-2 overflow-auto w-full">
+					{Object.entries(tpsArr).map((worldList) => {
+						return (
+							<WorldSection key={worldList[0]} world={worldList[1].worldName}>
+								{Object.entries(worldList[1].intervalData).map((interval) => {
+									return (
+										<TpsHistory
+											interval={Number(interval[0])}
+											key={`${worldList[1].worldName}-${interval[0]}`}
+										>
+											{" "}
+											{interval[1].map((tps) => (
+												<Tps {...tps} key={tps.time}></Tps>
+											))}
+										</TpsHistory>
+									);
+								})}
+							</WorldSection>
+						);
+						// if (!worlds.includes(v.worldUUID)) worlds.push();
+						// return (
+						// 	<WorldSection
+						// 		world={v.worldName ?? "[MUSSING WORLD NAME]"}
+						// 	></WorldSection>
+						// );
+						// return {};
+					})}
 				</div>
 				<TPSInserter {...{ ws: ws.current, useTPSType: false }} />
 			</div>

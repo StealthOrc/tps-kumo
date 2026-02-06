@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useId, useState } from "react";
 import type { WsSub } from "@/lib/api";
-import type { AddTps, Message, TPS } from "@/lib/types";
+import type { AddHytaleTps, KumoTPS, Message } from "@/lib/types";
 import { rand_range, rand_tps } from "@/lib/utils";
 
 export default function TPSInserter({
@@ -29,7 +29,7 @@ export default function TPSInserter({
 					id: crypto.randomUUID(),
 					tps: tps,
 					timestamp: new Date().toISOString(),
-				} as TPS)
+				} as KumoTPS)
 			: ({
 					tpsData: [
 						{
@@ -51,7 +51,7 @@ export default function TPSInserter({
 							},
 						},
 					],
-				} as AddTps);
+				} as AddHytaleTps);
 		console.log(
 			new Date().toISOString(),
 			"sending message:",
