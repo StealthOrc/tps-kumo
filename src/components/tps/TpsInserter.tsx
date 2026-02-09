@@ -1,15 +1,9 @@
 import { type FormEvent, useEffect, useId, useState } from "react";
 import type { WsSub } from "@/lib/api";
-import type { AddHytaleTps, KumoTPS, Message } from "@/lib/types";
+import type { External, Message } from "@/lib/types";
 import { rand_range, rand_tps } from "@/lib/utils";
 
-export default function TPSInserter({
-	ws,
-	useTPSType,
-}: {
-	ws: WsSub | null;
-	useTPSType: boolean;
-}) {
+export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 	const [tps, setTps] = useState<number>(rand_tps());
 	const [interval, setInterval] = useState<number>(10);
 	const [mspt, setMspt] = useState<number>(rand_range(0, 1));
@@ -24,34 +18,26 @@ export default function TPSInserter({
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
-		const message: Message = useTPSType
-			? ({
-					id: crypto.randomUUID(),
-					tps: tps,
-					timestamp: new Date().toISOString(),
-				} as KumoTPS)
-			: ({
-					tpsData: [
-						{
-							worldName: "default",
-							worldUUID: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
-							time: new Date().toISOString(),
-							tpsMstpMap: {
-								[interval]: [tps, 0],
-								[interval + 1]: [tps + 1, 1],
-							},
-						},
-						{
-							worldName: "another",
-							worldUUID: "509027b4-eb88-4c6a-a910-6a512ec801ba",
-							time: new Date().toISOString(),
-							tpsMstpMap: {
-								[interval]: [tps, 0],
-								[interval + 1]: [tps + 1, 1],
-							},
-						},
-					],
-				} as AddHytaleTps);
+		const message: Message = {
+			tpsData: [
+				{
+					worldName: "default",
+					worldUUID: "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
+					time: new Date().toISOString(),
+					tpsMstpMap: {
+						[interval]: [tps, 0],
+					},
+				},
+				{
+					worldName: "another",
+					worldUUID: "509027b4-eb88-4c6a-a910-6a512ec801ba",
+					time: new Date().toISOString(),
+					tpsMstpMap: {
+						[interval]: [tps, 0],
+					},
+				},
+			],
+		} as External.AddHytaleTps;
 		console.log(
 			new Date().toISOString(),
 			"sending message:",
@@ -59,7 +45,7 @@ export default function TPSInserter({
 		);
 		ws?.send(message);
 		setTps(rand_tps());
-		setInterval(interval + 2);
+		setInterval(interval);
 	};
 
 	return (

@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
-import type { ElysiaWS } from "elysia/ws";
 import { db } from "@/db";
 import { tps as tpsTable, worlds } from "@/db/schema";
+import type { Internal } from "@/lib/types";
 import { External, messageSchema } from "@/lib/types";
 
 export const ws = new Elysia().ws("/ws", {
@@ -24,65 +24,79 @@ export const ws = new Elysia().ws("/ws", {
 
 		const addTps = addTpsProbe.data;
 
-		addTps.tpsData.forEach((val) => {
-			// insert world if we dont have it yet
-			db.insert(worlds)
-				.values({
-					uuid: val.worldUUID,
-					name: val.worldName,
-				})
-				.onConflictDoUpdate({
-					target: worlds.uuid,
-					set: { name: val.worldName },
-				})
-				.then(() => insertTps(ws, val));
-		});
+		const insertPromises: Promise<unknown>[] = [];
+
+		for (const val of addTps.tpsData) {
+			insertPromises.push(
+				db
+					.insert(worlds)
+					.values({
+						uuid: val.worldUUID,
+						name: val.worldName,
+					})
+					.onConflictDoUpdate({
+						target: worlds.uuid,
+						set: { name: val.worldName },
+					}),
+			);
+			for (const [intervalKey, tpsMsptArray] of Object.entries(
+				val.tpsMstpMap,
+			)) {
+				const interval = parseInt(intervalKey, 10);
+				const tpsValue = tpsMsptArray[0] ?? 0;
+				insertPromises.push(
+					db.insert(tpsTable).values({
+						uuid: crypto.randomUUID(),
+						timestamp: new Date(val.time),
+						tps: tpsValue,
+						world: val.worldUUID,
+						interval,
+					}),
+				);
+			}
+		}
+
+		Promise.all(insertPromises)
+			.then(() => {
+				const tpsPointMap = buildTpsPointMap(addTps);
+				console.log(
+					new Date().toISOString(),
+					"inserted all TPS, sending TPS point map:",
+					tpsPointMap,
+				);
+				ws.send(tpsPointMap);
+			})
+			.catch((error) => {
+				console.error("Error inserting TPS records:", error);
+			});
 	},
 	close() {
 		console.log(new Date().toISOString(), "client left");
 	},
 });
 
-function insertTps(ws: ElysiaWS, addTps: External.TPS) {
-	// Iterate over all intervals in tpsMstpMap
-	const insertPromises = Object.entries(addTps.tpsMstpMap).map(
-		([intervalKey, tpsMsptArray]) => {
-			const interval = parseInt(intervalKey, 10); // Convert string key to number
-			const tpsValue = tpsMsptArray[0] ?? 0; // Get TPS (first element of array)
-			const msptValue = tpsMsptArray[1] ?? 0;
+function buildTpsPointMap(addTps: External.AddHytaleTps): Internal.TPSPointMap {
+	const map: Internal.TPSPointMap = { tpsData: {} };
 
-			console.log(
-				new Date(),
-				`interval, msptArray, tps, mspt:`,
-				interval,
-				tpsMsptArray,
-				tpsValue,
-				msptValue,
-			);
-			const dbTps = {
-				uuid: crypto.randomUUID(),
-				timestamp: new Date(addTps.time),
-				tps: tpsValue,
-				world: addTps.worldUUID,
-				interval, // Store the interval as integer
+	for (const val of addTps.tpsData) {
+		const timeStr = new Date(val.time).toISOString();
+
+		if (!map.tpsData[val.worldUUID]) {
+			map.tpsData[val.worldUUID] = {
+				worldName: val.worldName,
+				intervalData: {},
 			};
+		}
 
-			console.log(`Inserting TPS for interval ${interval}:`, dbTps);
+		for (const [intervalKey, tpsMsptArray] of Object.entries(val.tpsMstpMap)) {
+			const tps = tpsMsptArray[0] ?? 0;
+			const mspt = tpsMsptArray[1] ?? 0;
+			const point: Internal.TPSPoint = { time: timeStr, tps, mspt };
+			const arr = map.tpsData[val.worldUUID].intervalData[intervalKey];
+			if (arr) arr.push(point);
+			else map.tpsData[val.worldUUID].intervalData[intervalKey] = [point];
+		}
+	}
 
-			return db.insert(tpsTable).values(dbTps);
-		},
-	);
-
-	Promise.all(insertPromises)
-		.then(() => {
-			console.log(
-				new Date().toISOString(),
-				"got addTpsProbe, inserted all intervals, sending:",
-				addTps,
-			);
-			ws.send(addTps);
-		})
-		.catch((error) => {
-			console.error("Error inserting TPS records:", error);
-		});
+	return map;
 }

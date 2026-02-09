@@ -8,3 +8,7 @@ export function createWebSocket(address: string = DEFAULT_BACKEND_URL) {
 type WsObj = ReturnType<typeof createWebSocket>;
 type WsSubscribeFn = WsObj["subscribe"];
 export type WsSub = ReturnType<WsSubscribeFn>;
+
+export type WsMessageEvent = Parameters<
+	NonNullable<Parameters<WsSub["subscribe"]>[0]>
+>[0];

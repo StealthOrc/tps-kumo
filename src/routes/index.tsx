@@ -1,12 +1,21 @@
 import { createFileRoute, Link, linkOptions } from "@tanstack/react-router";
-import { StrictMode, useEffect, useId, useRef, useState } from "react";
+import {
+	type Dispatch,
+	type SetStateAction,
+	StrictMode,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import Tps from "@/components/tps";
 import TPSInserter from "@/components/tps/TpsInserter";
 import WorldSection from "@/components/tps/WorldSection";
 import TpsHistory from "@/components/tpsHistory";
 import { getTPS, type getTPSType } from "@/data/tps";
 import { env } from "@/env";
-import { createWebSocket, type WsSub } from "@/lib/api";
+import { createWebSocket, type WsMessageEvent, type WsSub } from "@/lib/api";
+import { Internal } from "@/lib/types";
+import { TPS } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
 	errorComponent: ({ error }) => <pre>{JSON.stringify(error, null, 2)}</pre>,
@@ -14,9 +23,63 @@ export const Route = createFileRoute("/")({
 	component: App,
 });
 
+type TpsState = Awaited<getTPSType>;
+
+function applyTpsPointMap(
+	prev: TpsState,
+	tpsPointMap: Internal.TPSPointMap,
+): TpsState {
+	const next: TpsState = { ...prev };
+
+	for (const [worldUUID, worldEntry] of Object.entries(tpsPointMap.tpsData)) {
+		const prevWorld = next.tpsData[worldUUID];
+		const mergedWorld = prevWorld
+			? {
+					worldName: worldEntry.worldName ?? prevWorld.worldName,
+					intervalData: { ...prevWorld.intervalData },
+				}
+			: {
+					worldName: worldEntry.worldName,
+					intervalData: {} as Record<string, Internal.TPSPoint[]>,
+				};
+
+		for (const [intervalKey, points] of Object.entries(
+			worldEntry.intervalData,
+		)) {
+			const arr = [...(mergedWorld.intervalData[intervalKey] ?? [])];
+			for (const point of points) {
+				const { index, found } = TPS.findInsertIndex(arr, point.time);
+				console.log(
+					`findInsertIndex: ${worldEntry.worldName} - ${index}:${found} point:`,
+					point,
+					arr,
+				);
+				if (found) {
+					arr[index] = point;
+				} else {
+					arr.splice(index, 0, point);
+				}
+			}
+			mergedWorld.intervalData[intervalKey] = arr;
+		}
+
+		next.tpsData[worldUUID] = mergedWorld;
+	}
+
+	return next;
+}
+
+function handleWsMessage(setTpsArr: Dispatch<SetStateAction<TpsState>>) {
+	return (event: WsMessageEvent) => {
+		const parse = Internal.tpsPointMapSchema.safeParse(event.data);
+		if (!parse.success) return;
+
+		setTpsArr((prev) => applyTpsPointMap(prev, parse.data));
+	};
+}
+
 function App() {
-	const [tpsArr, setTpsArr] = useState<Awaited<getTPSType>>({});
-	const [worlds, setWorlds] = useState<string[]>([]);
+	const [tpsArr, setTpsArr] = useState<TpsState>({ tpsData: {} });
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
 		getTPS().then((value) => setTpsArr(value));
@@ -26,6 +89,7 @@ function App() {
 			env.VITE_BACKEND_URL,
 		);
 		ws.current = createWebSocket(env.VITE_BACKEND_URL).subscribe();
+		ws.current.subscribe(handleWsMessage(setTpsArr));
 		//TODO: When coming from another page back to home, we seem to do this request 3x!?
 		return () => {
 			ws.current?.close();
@@ -40,7 +104,7 @@ function App() {
 						TPS Kumo is a tool for monitoring TPS of a Hytale Server.
 					</p>
 				</div>
-				<nav className="border-1 border-[hsl(224,15%,20%)] p-2">
+				<nav className="border border-[hsl(224,15%,20%)] p-2">
 					<ol>
 						<Link className="hover:underline" {...linkOptions({ to: "/" })}>
 							Home
@@ -48,7 +112,7 @@ function App() {
 					</ol>
 				</nav>
 				<div className="flex flex-1 flex-col gap-2 overflow-auto w-full">
-					{Object.entries(tpsArr).map((worldList) => {
+					{Object.entries(tpsArr.tpsData).map((worldList) => {
 						return (
 							<WorldSection key={worldList[0]} world={worldList[1].worldName}>
 								{Object.entries(worldList[1].intervalData).map((interval) => {
@@ -66,13 +130,6 @@ function App() {
 								})}
 							</WorldSection>
 						);
-						// if (!worlds.includes(v.worldUUID)) worlds.push();
-						// return (
-						// 	<WorldSection
-						// 		world={v.worldName ?? "[MUSSING WORLD NAME]"}
-						// 	></WorldSection>
-						// );
-						// return {};
 					})}
 				</div>
 				<TPSInserter {...{ ws: ws.current, useTPSType: false }} />

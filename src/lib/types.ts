@@ -21,14 +21,17 @@ export namespace Internal {
 		tps: z.number(),
 		mspt: z.number(),
 	});
+	export const tpsPointArrSchema = z.array(tpsPointSchema);
 	// tpsMap of worldUUID: (interval : TPSPoint Array)
-	export const tpsMapSchema = z.record(
-		z.uuid(),
-		z.object({
-			worldName: z.string(),
-			intervalData: z.record(z.string(), z.array(tpsPointSchema)),
-		}),
-	);
+	export const tpsPointMapSchema = z.object({
+		tpsData: z.record(
+			z.uuid(),
+			z.object({
+				worldName: z.string(),
+				intervalData: z.record(z.string(), z.array(tpsPointSchema)),
+			}),
+		),
+	});
 
 	//verbose TPS Info with interval and world info
 	export type TPS = z.infer<typeof tpsSchema>;
@@ -36,31 +39,57 @@ export namespace Internal {
 
 	//stripped TPS point info
 	export type TPSPoint = z.infer<typeof tpsPointSchema>;
-	export type TPSPointArr = TPSPoint[];
-	export type TPSPointMap = z.infer<typeof tpsMapSchema>;
+	export type TPSPointArr = z.infer<typeof tpsPointArrSchema>;
+	/*
+reference: 
+{
+	tpsData: {
+		"worldName": "default",
+		"worldUUID": "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
+		"time": "2026-01-26T23:29:50.3253418+01:00[Europe/Berlin]",
+		"tpsMstpMap": {
+			"1": [  // interval
+			30.0, //TPS
+			0.1297 //MSPT
+			],
+			"10": [
+			30.0,
+			0.09286228956228967
+			],
+			"60": [
+			10.0,
+			0.55
+			]
+		}	
+	}
+}
+	 */
+	export type TPSPointMap = z.infer<typeof tpsPointMapSchema>;
 }
 
 export namespace External {
 	/*
 reference: 
 {
-  "worldName": "default",
-  "worldUUID": "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
-  "time": "2026-01-26T23:29:50.3253418+01:00[Europe/Berlin]",
-  "tpsMstpMap": {
-    "1": [  // interval
-      30.0, //TPS
-      0.1297 //MSPT
-    ],
-    "10": [
-      30.0,
-      0.09286228956228967
-    ],
-    "60": [
-      10.0,
-      0.55
-    ]
-  }
+	tpsData: [
+		"worldName": "default",
+		"worldUUID": "1bcb661a-5522-4f5e-89d4-e68d18fc37aa",
+		"time": "2026-01-26T23:29:50.3253418+01:00[Europe/Berlin]",
+		"tpsMstpMap": {
+			"1": [  // interval
+			30.0, //TPS
+			0.1297 //MSPT
+			],
+			"10": [
+			30.0,
+			0.09286228956228967
+			],
+			"60": [
+			10.0,
+			0.55
+			]
+		}
+	]
 }
 */
 	export const tpsSchema = z.object({
@@ -79,7 +108,7 @@ reference:
 
 export const messageSchema = z.union([
 	External.addTpsSchema,
-	Internal.tpsArrSchema,
+	Internal.tpsPointMapSchema,
 ]);
 export type Message = z.infer<typeof messageSchema>;
 

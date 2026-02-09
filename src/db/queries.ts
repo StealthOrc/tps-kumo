@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as tables from "@/db/schema";
 import { DEFAULT_INTERVAL, DEFAULT_WORLD_NAME } from "@/lib/const";
-import type { Internal, Interval, WorldUUID } from "@/lib/types";
+import type { Internal } from "@/lib/types";
 
 export async function selectTPSWithWorldName(): Promise<Internal.TPSPointMap> {
 	const queryResult = await db
@@ -17,18 +17,18 @@ export async function selectTPSWithWorldName(): Promise<Internal.TPSPointMap> {
 		.leftJoin(tables.worlds, eq(tables.tps.world, tables.worlds.uuid))
 		.orderBy(desc(tables.tps.world), desc(tables.tps.timestamp));
 
-	const out: Internal.TPSPointMap = {};
+	const out: Internal.TPSPointMap = { tpsData: {} };
 	for (const row of queryResult) {
 		const worldUUID = row.worldUUID;
-		if (!out[worldUUID])
-			out[worldUUID] = {
+		if (!out.tpsData[worldUUID])
+			out.tpsData[worldUUID] = {
 				worldName: row.worldName ?? DEFAULT_WORLD_NAME,
 				intervalData: {},
 			};
 		const interval = row.interval ?? DEFAULT_INTERVAL;
-		if (!out[worldUUID].intervalData[interval])
-			out[worldUUID].intervalData[interval] = [];
-		out[worldUUID].intervalData[interval].push({
+		if (!out.tpsData[worldUUID].intervalData[interval])
+			out.tpsData[worldUUID].intervalData[interval] = [];
+		out.tpsData[worldUUID].intervalData[interval].push({
 			time: row.time.toISOString(),
 			tps: row.tps,
 			mspt: 0,
