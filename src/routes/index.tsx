@@ -1,12 +1,20 @@
-import { createFileRoute, Link, linkOptions } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	linkOptions,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
 import {
 	type Dispatch,
 	type SetStateAction,
 	StrictMode,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
+import z from "zod";
 import Tps from "@/components/tps";
 import TPSInserter from "@/components/tps/TpsInserter";
 import WorldSection from "@/components/tps/WorldSection";
@@ -17,10 +25,13 @@ import { createWebSocket, type WsMessageEvent, type WsSub } from "@/lib/api";
 import { Internal } from "@/lib/types";
 import { TPS } from "@/lib/utils";
 
+const routeParams = z.object({ world: z.string().optional() });
+
 export const Route = createFileRoute("/")({
 	errorComponent: ({ error }) => <pre>{JSON.stringify(error, null, 2)}</pre>,
 	pendingComponent: () => <div>Loading home…</div>,
 	component: App,
+	validateSearch: (search) => routeParams.parse(search),
 });
 
 type TpsState = Awaited<getTPSType>;
@@ -78,8 +89,25 @@ function handleWsMessage(setTpsArr: Dispatch<SetStateAction<TpsState>>) {
 	};
 }
 
+type LinkDef = { id: string; worldUuid: string; worldName: string };
+
+const ALL_WORLDS = "ALL";
+
 function App() {
+	const { world: selectedWorldUuid } = useSearch({ from: Route.fullPath });
 	const [tpsArr, setTpsArr] = useState<TpsState>({ tpsData: {} });
+	const worldsLinks = useMemo<LinkDef[]>(() => {
+		const result: LinkDef[] = Object.entries(tpsArr.tpsData).map(
+			([worldUuid, { worldName }]) => ({
+				id: worldUuid,
+				worldUuid,
+				worldName,
+			}),
+		);
+		result.unshift({ id: "ALL", worldUuid: ALL_WORLDS, worldName: ALL_WORLDS });
+		return result;
+	}, [tpsArr.tpsData]);
+	const navigate = useNavigate({ from: Route.fullPath });
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
 		getTPS().then((value) => setTpsArr(value));
@@ -111,23 +139,45 @@ function App() {
 						</Link>
 					</ol>
 				</nav>
+				<nav className="border border-[hsl(224,15%,20%)] p-2 flex gap-0.5">
+					{worldsLinks.map(({ id, worldUuid, worldName }) => (
+						<button
+							key={id}
+							className="hover:underline cursor-pointer hover:bg-[hsl(212,30%,18%)] p-2 rounded-sm"
+							type="button"
+							onClick={() =>
+								navigate({ search: { world: worldUuid }, replace: true })
+							}
+						>
+							{worldName}
+						</button>
+					))}
+				</nav>
 				<div className="flex flex-1 flex-col gap-2 overflow-auto w-full">
-					{Object.entries(tpsArr.tpsData).map((worldList) => {
+					{Object.entries(tpsArr.tpsData).map(([worldUuid, worldEntry]) => {
+						// Only display the selected world; data for all worlds stays in tpsArr keeps updating
 						return (
-							<WorldSection key={worldList[0]} world={worldList[1].worldName}>
-								{Object.entries(worldList[1].intervalData).map((interval) => {
-									return (
-										<TpsHistory
-											interval={Number(interval[0])}
-											key={`${worldList[1].worldName}-${interval[0]}`}
-										>
-											{" "}
-											{interval[1].map((tps) => (
-												<Tps {...tps} key={tps.time}></Tps>
-											))}
-										</TpsHistory>
-									);
-								})}
+							<WorldSection
+								className={`${
+									selectedWorldUuid &&
+									worldUuid !== selectedWorldUuid &&
+									selectedWorldUuid !== ALL_WORLDS
+										? "hidden"
+										: ""
+								}`}
+								key={worldUuid}
+								world={worldEntry.worldName}
+							>
+								{Object.entries(worldEntry.intervalData).map((interval) => (
+									<TpsHistory
+										interval={Number(interval[0])}
+										key={`${worldEntry.worldName}-${interval[0]}`}
+									>
+										{interval[1].map((tps) => (
+											<Tps {...tps} key={tps.time} />
+										))}
+									</TpsHistory>
+								))}
 							</WorldSection>
 						);
 					})}

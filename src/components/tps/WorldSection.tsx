@@ -13,7 +13,10 @@ export default function WorldSection({
 	children,
 	...rest
 }: WorldSectionProps & React.ComponentProps<"div">) {
-	const combined = clsx("flex flex-col", className);
+	const combined = clsx(
+		"flex flex-col gap-1 border-4 border-[hsl(224,15%,20%)] bg-[hsl(212,30%,18%)] rounded-a px-4 py-2",
+		className,
+	);
 	return (
 		<div className={combined}>
 			<h3>{world}</h3>
