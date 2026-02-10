@@ -25,7 +25,10 @@ import { createWebSocket, type WsMessageEvent, type WsSub } from "@/lib/api";
 import { Internal } from "@/lib/types";
 import { TPS } from "@/lib/utils";
 
-const routeParams = z.object({ world: z.string().optional() });
+const routeParams = z.object({
+	world: z.string().optional(),
+	interval: z.string().optional(),
+});
 
 export const Route = createFileRoute("/")({
 	errorComponent: ({ error }) => <pre>{JSON.stringify(error, null, 2)}</pre>,
@@ -90,11 +93,15 @@ function handleWsMessage(setTpsArr: Dispatch<SetStateAction<TpsState>>) {
 }
 
 type LinkDef = { id: string; worldUuid: string; worldName: string };
+type IntervalLinkDef = { id: string; intervalKey: string; displayLabel: string };
 
 const ALL_WORLDS = "ALL";
+const ALL_INTERVALS = "ALL";
 
 function App() {
-	const { world: selectedWorldUuid } = useSearch({ from: Route.fullPath });
+	const { world: selectedWorldUuid, interval: selectedIntervalKey } = useSearch({
+		from: Route.fullPath,
+	});
 	const [tpsArr, setTpsArr] = useState<TpsState>({ tpsData: {} });
 	const worldsLinks = useMemo<LinkDef[]>(() => {
 		const result: LinkDef[] = Object.entries(tpsArr.tpsData).map(
@@ -107,6 +114,32 @@ function App() {
 		result.unshift({ id: "ALL", worldUuid: ALL_WORLDS, worldName: ALL_WORLDS });
 		return result;
 	}, [tpsArr.tpsData]);
+	const intervalsLinks = useMemo<IntervalLinkDef[]>(() => {
+		const intervalKeys = new Set<string>();
+		const entries = Object.entries(tpsArr.tpsData);
+		const worldsToScan =
+			selectedWorldUuid && selectedWorldUuid !== ALL_WORLDS
+				? entries.filter(([uuid]) => uuid === selectedWorldUuid)
+				: entries;
+		for (const [, worldEntry] of worldsToScan) {
+			for (const key of Object.keys(worldEntry.intervalData)) {
+				intervalKeys.add(key);
+			}
+		}
+		const result: IntervalLinkDef[] = [...intervalKeys]
+			.sort((a, b) => Number(a) - Number(b))
+			.map((intervalKey) => ({
+				id: intervalKey,
+				intervalKey,
+				displayLabel: `${intervalKey}s`,
+			}));
+		result.unshift({
+			id: "ALL",
+			intervalKey: ALL_INTERVALS,
+			displayLabel: ALL_INTERVALS,
+		});
+		return result;
+	}, [tpsArr.tpsData, selectedWorldUuid]);
 	const navigate = useNavigate({ from: Route.fullPath });
 	const ws = useRef<WsSub | null>(null);
 	useEffect(() => {
@@ -146,10 +179,30 @@ function App() {
 							className="hover:underline cursor-pointer hover:bg-[hsl(212,30%,18%)] p-2 rounded-sm"
 							type="button"
 							onClick={() =>
-								navigate({ search: { world: worldUuid }, replace: true })
+								navigate({
+									search: { world: worldUuid, interval: selectedIntervalKey },
+									replace: true,
+								})
 							}
 						>
 							{worldName}
+						</button>
+					))}
+				</nav>
+				<nav className="border border-[hsl(224,15%,20%)] p-2 flex gap-0.5">
+					{intervalsLinks.map(({ id, intervalKey, displayLabel }) => (
+						<button
+							key={id}
+							className="hover:underline cursor-pointer hover:bg-[hsl(212,30%,18%)] p-2 rounded-sm"
+							type="button"
+							onClick={() =>
+								navigate({
+									search: { world: selectedWorldUuid, interval: intervalKey },
+									replace: true,
+								})
+							}
+						>
+							{displayLabel}
 						</button>
 					))}
 				</nav>
@@ -168,16 +221,27 @@ function App() {
 								key={worldUuid}
 								world={worldEntry.worldName}
 							>
-								{Object.entries(worldEntry.intervalData).map((interval) => (
-									<TpsHistory
-										interval={Number(interval[0])}
-										key={`${worldEntry.worldName}-${interval[0]}`}
-									>
-										{interval[1].map((tps) => (
-											<Tps {...tps} key={tps.time} />
-										))}
-									</TpsHistory>
-								))}
+								{Object.entries(worldEntry.intervalData).map(
+									([intervalKey, points]) => {
+										// Only display the selected interval; data for all intervals stays in tpsArr
+										if (
+											selectedIntervalKey &&
+											selectedIntervalKey !== ALL_INTERVALS &&
+											intervalKey !== selectedIntervalKey
+										)
+											return null;
+										return (
+											<TpsHistory
+												interval={Number(intervalKey)}
+												key={`${worldEntry.worldName}-${intervalKey}`}
+											>
+												{points.map((tps) => (
+													<Tps {...tps} key={tps.time} />
+												))}
+											</TpsHistory>
+										);
+									},
+								)}
 							</WorldSection>
 						);
 					})}
