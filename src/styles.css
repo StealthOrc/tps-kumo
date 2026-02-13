@@ -1,10 +1,78 @@
 @import "tailwindcss";
 
+/* Hytale-style design tokens */
+:root {
+  --hytale-bg: #0d0f12;
+  --hytale-bg-elevated: #151920;
+  --hytale-bg-card: #1a1e26;
+  --hytale-border: #2a3140;
+  --hytale-border-focus: #3d4a5c;
+  --hytale-text: #e8eaed;
+  --hytale-text-muted: #9ca3af;
+  --hytale-accent: #c9a227;
+  --hytale-accent-hover: #e0b83d;
+  --hytale-accent-subtle: rgba(201, 162, 39, 0.15);
+  --hytale-success: #4ade80;
+  --hytale-warning: #fbbf24;
+  --hytale-danger: #f87171;
+  --hytale-radius: 4px;
+  --hytale-radius-lg: 8px;
+  --hytale-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --hytale-font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+    "Roboto", "Oxygen", "Ubuntu", sans-serif;
+}
+
 body {
   @apply m-0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: var(--hytale-font);
+  background-color: var(--hytale-bg);
+  color: var(--hytale-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hytale-style utility classes for components */
+.hytale-card {
+  background: var(--hytale-bg-card);
+  border: 1px solid var(--hytale-border);
+  border-radius: var(--hytale-radius-lg);
+  box-shadow: var(--hytale-shadow);
+}
+
+.hytale-btn {
+  background: var(--hytale-bg-elevated);
+  color: var(--hytale-text);
+  border: 1px solid var(--hytale-border);
+  border-radius: var(--hytale-radius);
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+}
+
+.hytale-btn:hover {
+  background: var(--hytale-border-focus);
+  border-color: var(--hytale-border-focus);
+}
+
+.hytale-btn-active {
+  background: var(--hytale-accent-subtle);
+  border-color: var(--hytale-accent);
+  color: var(--hytale-accent);
+}
+
+.hytale-input {
+  background: var(--hytale-bg);
+  color: var(--hytale-text);
+  border: 1px solid var(--hytale-border);
+  border-radius: var(--hytale-radius);
+}
+
+.hytale-input:focus {
+  outline: none;
+  border-color: var(--hytale-accent);
+  box-shadow: 0 0 0 2px var(--hytale-accent-subtle);
+}
+
+.hytale-btn[style*="--hytale-accent"]:hover {
+  background: var(--hytale-accent-subtle);
+  border-color: var(--hytale-accent-hover);
+  color: var(--hytale-accent-hover);
 }

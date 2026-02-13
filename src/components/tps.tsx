@@ -1,19 +1,20 @@
 import { useId } from "react";
 import type { Internal } from "@/lib/types";
 
-export default function Tps({ time, tps, mspt }: Internal.TPSPoint) {
+export default function Tps({ tps }: Internal.TPSPoint) {
+	const barStyle =
+		tps > 15
+			? { backgroundColor: "var(--hytale-success)" }
+			: tps > 5
+				? { backgroundColor: "var(--hytale-warning)" }
+				: { backgroundColor: "var(--hytale-danger)" };
 	return (
 		<span
-			className={`${
-				tps > 5
-					? tps > 15
-						? "hover:bg-green-500 bg-green-600"
-						: "hover:bg-orange-500 bg-orange-600"
-					: "hover:bg-red-500 bg-red-600"
-			} 
-            h-15 w-2 rounded-xs`}
+			className="h-4 min-w-1 rounded-sm transition-opacity hover:opacity-90"
+			style={{ ...barStyle, width: "8px" }}
 			key={useId()}
 			data-tps={tps}
+			title={`TPS: ${tps}`}
 		/>
 	);
 }
