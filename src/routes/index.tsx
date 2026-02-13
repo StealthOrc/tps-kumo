@@ -32,7 +32,11 @@ const routeParams = z.object({
 
 export const Route = createFileRoute("/")({
 	errorComponent: ({ error }) => <pre>{JSON.stringify(error, null, 2)}</pre>,
-	pendingComponent: () => <div>Loading home…</div>,
+	pendingComponent: () => (
+		<div className="flex items-center justify-center min-h-[200px]" style={{ color: "var(--hytale-text-muted)" }}>
+			Loading…
+		</div>
+	),
 	component: App,
 	validateSearch: (search) => routeParams.parse(search),
 });
@@ -158,55 +162,72 @@ function App() {
 	}, []);
 	return (
 		<StrictMode>
-			<div className="flex flex-col p-5 gap-4 items-center min-h-screen bg-[hsl(216,31.3%,12.5%)] text-white overflow-auto">
-				<div className="bg-[hsl(214,43%,21%)] border-4 border-[hsl(224,15%,20%)] rounded-sm p-2">
-					<h1 className="text-6xl text-center">TPS Kumo</h1>
-					<p className="text-xl px-2">
-						TPS Kumo is a tool for monitoring TPS of a Hytale Server.
+			<div className="flex flex-col min-h-screen overflow-auto" style={{ backgroundColor: "var(--hytale-bg)", color: "var(--hytale-text)" }}>
+				{/* Hero / header - Hytale-style banner */}
+				<header className="hytale-card mx-4 mt-6 mb-2 px-6 py-8 text-center max-w-4xl w-full self-center">
+					<h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-2" style={{ color: "var(--hytale-text)" }}>
+						TPS Kumo
+					</h1>
+					<p className="text-lg" style={{ color: "var(--hytale-text-muted)" }}>
+						Monitor TPS of your Hytale server in real time.
 					</p>
-				</div>
-				<nav className="border border-[hsl(224,15%,20%)] p-2">
-					<ol>
-						<Link className="hover:underline" {...linkOptions({ to: "/" })}>
-							Home
-						</Link>
-					</ol>
+				</header>
+
+				{/* Main nav bar */}
+				<nav className="hytale-card mx-4 mb-3 px-4 py-2 max-w-4xl w-full self-center flex flex-wrap items-center gap-2">
+					<Link
+						className="hytale-btn px-4 py-2 no-underline"
+						{...linkOptions({ to: "/" })}
+					>
+						Home
+					</Link>
 				</nav>
-				<nav className="border border-[hsl(224,15%,20%)] p-2 flex gap-0.5">
-					{worldsLinks.map(({ id, worldUuid, worldName }) => (
-						<button
-							key={id}
-							className="hover:underline cursor-pointer hover:bg-[hsl(212,30%,18%)] p-2 rounded-sm"
-							type="button"
-							onClick={() =>
-								navigate({
-									search: { world: worldUuid, interval: selectedIntervalKey },
-									replace: true,
-								})
-							}
-						>
-							{worldName}
-						</button>
-					))}
+
+				{/* World filter */}
+				<nav className="mx-4 mb-2 max-w-4xl w-full self-center">
+					<p className="text-sm mb-1.5" style={{ color: "var(--hytale-text-muted)" }}>World</p>
+					<div className="flex flex-wrap gap-1.5">
+						{worldsLinks.map(({ id, worldUuid, worldName }) => (
+							<button
+								key={id}
+								className={`hytale-btn px-3 py-1.5 text-sm cursor-pointer ${selectedWorldUuid === worldUuid ? "hytale-btn-active" : ""}`}
+								type="button"
+								onClick={() =>
+									navigate({
+										search: { world: worldUuid, interval: selectedIntervalKey },
+										replace: true,
+									})
+								}
+							>
+								{worldName}
+							</button>
+						))}
+					</div>
 				</nav>
-				<nav className="border border-[hsl(224,15%,20%)] p-2 flex gap-0.5">
-					{intervalsLinks.map(({ id, intervalKey, displayLabel }) => (
-						<button
-							key={id}
-							className="hover:underline cursor-pointer hover:bg-[hsl(212,30%,18%)] p-2 rounded-sm"
-							type="button"
-							onClick={() =>
-								navigate({
-									search: { world: selectedWorldUuid, interval: intervalKey },
-									replace: true,
-								})
-							}
-						>
-							{displayLabel}
-						</button>
-					))}
+
+				{/* Interval filter */}
+				<nav className="mx-4 mb-4 max-w-4xl w-full self-center">
+					<p className="text-sm mb-1.5" style={{ color: "var(--hytale-text-muted)" }}>Interval</p>
+					<div className="flex flex-wrap gap-1.5">
+						{intervalsLinks.map(({ id, intervalKey, displayLabel }) => (
+							<button
+								key={id}
+								className={`hytale-btn px-3 py-1.5 text-sm cursor-pointer ${selectedIntervalKey === intervalKey ? "hytale-btn-active" : ""}`}
+								type="button"
+								onClick={() =>
+									navigate({
+										search: { world: selectedWorldUuid, interval: intervalKey },
+										replace: true,
+									})
+								}
+							>
+								{displayLabel}
+							</button>
+						))}
+					</div>
 				</nav>
-				<div className="flex flex-1 flex-col gap-2 overflow-auto w-full">
+
+				<div className="flex flex-1 flex-col gap-4 overflow-auto w-full max-w-4xl self-center px-4 pb-6">
 					{Object.entries(tpsArr.tpsData).map(([worldUuid, worldEntry]) => {
 						// Only display the selected world; data for all worlds stays in tpsArr keeps updating
 						return (

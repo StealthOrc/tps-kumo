@@ -7,6 +7,9 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 	const [tps, setTps] = useState<number>(rand_tps());
 	const [interval, setInterval] = useState<number>(10);
 	const [mspt, setMspt] = useState<number>(rand_range(0, 1));
+	const tpsId = useId();
+	const msptId = useId();
+	const intervalId = useId();
 
 	useEffect(() => {
 		ws?.on("open", () => console.log("WS opened"));
@@ -50,48 +53,83 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 
 	return (
 		<form
-			className="flex flex-col border-2 border-white text-white p-2 gap-2"
+			className="hytale-card flex flex-col p-4 gap-4 max-w-md"
 			onSubmit={handleSubmit}
 		>
-			<span className="text-center font-bold border-b border-b-white pb-0.5">
-				Test AddTps Tool
+			<span
+				className="text-center font-semibold pb-2 border-b"
+				style={{
+					borderColor: "var(--hytale-border)",
+					color: "var(--hytale-text)",
+				}}
+			>
+				Test Add TPS
 			</span>
-			<div id={`formContent-${useId()}`} className="flex gap-2 items-center">
-				<div className="flex flex-col">
-					<div className="flex flex-col">
-						<label htmlFor="tps">TPS</label>
-						<input
-							className="bg-white text-black"
-							name="tps"
-							type="number"
-							value={tps}
-							onChange={(event) => setTps(Number(event.target.value))}
-						></input>
-					</div>
-					<div className="flex flex-col">
-						<label htmlFor="mspt">MSPT</label>
-						<input
-							className="bg-white text-black"
-							name="mspt"
-							type="number"
-							value={mspt}
-							onChange={(event) => setMspt(Number(event.target.value))}
-						></input>
-					</div>
-				</div>
-				<div className="flex flex-col">
-					<label htmlFor="interval">Interval in [s]</label>
+			<div
+				id={`formContent-${useId()}`}
+				className="flex flex-wrap gap-4 items-end"
+			>
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor={tpsId}
+						className="text-sm"
+						style={{ color: "var(--hytale-text-muted)" }}
+					>
+						TPS
+					</label>
 					<input
-						className="bg-white text-black"
+						id={tpsId}
+						className="hytale-input px-3 py-2 w-24"
+						name="tps"
+						type="number"
+						value={tps}
+						onChange={(e) => setTps(Number(e.target.value))}
+					/>
+				</div>
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor={msptId}
+						className="text-sm"
+						style={{ color: "var(--hytale-text-muted)" }}
+					>
+						MSPT
+					</label>
+					<input
+						id={msptId}
+						className="hytale-input px-3 py-2 w-24"
+						name="mspt"
+						type="number"
+						value={mspt}
+						onChange={(e) => setMspt(Number(e.target.value))}
+					/>
+				</div>
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor={intervalId}
+						className="text-sm"
+						style={{ color: "var(--hytale-text-muted)" }}
+					>
+						Interval (s)
+					</label>
+					<input
+						id={intervalId}
+						className="hytale-input px-3 py-2 w-24"
 						name="interval"
 						type="number"
 						value={interval}
-						onChange={(event) => setInterval(Number(event.target.value))}
-					></input>
+						onChange={(e) => setInterval(Number(e.target.value))}
+					/>
 				</div>
 			</div>
-			<button type="submit" className="hover:bg-amber-400 hover:cursor-pointer">
-				send
+			<button
+				type="submit"
+				className="hytale-btn px-4 py-2 cursor-pointer font-medium w-fit"
+				style={{
+					borderColor: "var(--hytale-accent)",
+					color: "var(--hytale-accent)",
+				}}
+			>
+				Send
 			</button>
 		</form>
 	);
