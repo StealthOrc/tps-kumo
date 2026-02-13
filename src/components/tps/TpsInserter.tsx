@@ -7,6 +7,9 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 	const [tps, setTps] = useState<number>(rand_tps());
 	const [interval, setInterval] = useState<number>(10);
 	const [mspt, setMspt] = useState<number>(rand_range(0, 1));
+	const tpsId = useId();
+	const msptId = useId();
+	const intervalId = useId();
 
 	useEffect(() => {
 		ws?.on("open", () => console.log("WS opened"));
@@ -55,14 +58,27 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 		>
 			<span
 				className="text-center font-semibold pb-2 border-b"
-				style={{ borderColor: "var(--hytale-border)", color: "var(--hytale-text)" }}
+				style={{
+					borderColor: "var(--hytale-border)",
+					color: "var(--hytale-text)",
+				}}
 			>
 				Test Add TPS
 			</span>
-			<div id={`formContent-${useId()}`} className="flex flex-wrap gap-4 items-end">
+			<div
+				id={`formContent-${useId()}`}
+				className="flex flex-wrap gap-4 items-end"
+			>
 				<div className="flex flex-col gap-1">
-					<label htmlFor="tps" className="text-sm" style={{ color: "var(--hytale-text-muted)" }}>TPS</label>
+					<label
+						htmlFor={tpsId}
+						className="text-sm"
+						style={{ color: "var(--hytale-text-muted)" }}
+					>
+						TPS
+					</label>
 					<input
+						id={tpsId}
 						className="hytale-input px-3 py-2 w-24"
 						name="tps"
 						type="number"
@@ -71,8 +87,15 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<label htmlFor="mspt" className="text-sm" style={{ color: "var(--hytale-text-muted)" }}>MSPT</label>
+					<label
+						htmlFor={msptId}
+						className="text-sm"
+						style={{ color: "var(--hytale-text-muted)" }}
+					>
+						MSPT
+					</label>
 					<input
+						id={msptId}
 						className="hytale-input px-3 py-2 w-24"
 						name="mspt"
 						type="number"
@@ -81,8 +104,15 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<label htmlFor="interval" className="text-sm" style={{ color: "var(--hytale-text-muted)" }}>Interval (s)</label>
+					<label
+						htmlFor={intervalId}
+						className="text-sm"
+						style={{ color: "var(--hytale-text-muted)" }}
+					>
+						Interval (s)
+					</label>
 					<input
+						id={intervalId}
 						className="hytale-input px-3 py-2 w-24"
 						name="interval"
 						type="number"
@@ -94,7 +124,10 @@ export default function TPSInserter({ ws }: { ws: WsSub | null }) {
 			<button
 				type="submit"
 				className="hytale-btn px-4 py-2 cursor-pointer font-medium w-fit"
-				style={{ borderColor: "var(--hytale-accent)", color: "var(--hytale-accent)" }}
+				style={{
+					borderColor: "var(--hytale-accent)",
+					color: "var(--hytale-accent)",
+				}}
 			>
 				Send
 			</button>
